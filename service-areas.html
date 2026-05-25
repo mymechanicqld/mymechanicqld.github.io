@@ -1,0 +1,995 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#1E3A8A" />
+<title>Service Areas · My Mechanic QLD</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+  rel="stylesheet"
+/>
+
+<style>
+  :root {
+    --navy: #1E3A8A;
+    --navy-deep: #1A2E6E;
+    --navy-bright: #2563EB;
+    --navy-tint: #E8EEFB;
+    --bg: #FAFAF8;
+    --bg-warm: #F5F4EF;
+    --surface: #FFFFFF;
+    --ink: #0C0A09;
+    --muted: #44403C;
+    --subtle: #78716C;
+    --hairline: #E7E5E0;
+    --strong: #D6D3CB;
+    --green: #15803D;
+    --green-tint: #DCFCE7;
+    --amber: #B45309;
+    --amber-tint: #FEF3C7;
+    --red: #B91C1C;
+    --red-tint: #FEE2E2;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: 96px;
+  }
+
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 48px 24px 24px;
+  }
+  @media (max-width: 700px) {
+    .wrap { padding: 28px 18px 16px; }
+  }
+
+  /* Brand header */
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 800;
+    font-size: 17px;
+    letter-spacing: -0.01em;
+    margin-bottom: 36px;
+  }
+  .brand__mark {
+    width: 38px; height: 38px; border-radius: 9px; background: var(--navy);
+    display: grid; place-items: center; color: white;
+  }
+  .brand__sub { font-weight: 500; color: var(--subtle); font-size: 13px; }
+  .brand__sub::before { content: '·'; margin: 0 6px; color: var(--hairline); }
+
+  h1 {
+    font-size: 34px;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    font-weight: 800;
+    margin: 0 0 12px;
+    color: var(--ink);
+  }
+  .lead {
+    font-size: 16px;
+    color: var(--muted);
+    margin: 0 0 32px;
+    max-width: 68ch;
+    line-height: 1.6;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: inline-flex;
+    background: var(--bg-warm);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 28px;
+    gap: 2px;
+  }
+  .tab {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    padding: 9px 18px;
+    border-radius: 9px;
+    font-family: inherit;
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.16s ease;
+  }
+  .tab:hover { color: var(--ink); }
+  .tab.is-active {
+    background: var(--surface);
+    color: var(--navy);
+    box-shadow: 0 1px 3px rgba(12, 10, 9, 0.06), 0 0 0 1px var(--hairline);
+  }
+  .tab__count {
+    display: inline-grid;
+    place-items: center;
+    min-width: 22px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: var(--navy-tint);
+    color: var(--navy);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .tab:not(.is-active) .tab__count { background: var(--hairline); color: var(--muted); }
+
+  /* Panels */
+  .panel { display: none; }
+  .panel.is-active { display: block; }
+
+  /* Status banner */
+  .status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--hairline);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+  .status.is-loading { background: var(--bg-warm); }
+  .status.is-error { background: var(--red-tint); border-color: #FCA5A5; color: var(--red); }
+  .status.is-saved { background: var(--green-tint); border-color: #86EFAC; color: var(--green); }
+  .status svg { flex-shrink: 0; }
+
+  /* Region toolbar */
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+  }
+  .toolbar__summary {
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .toolbar__summary b { color: var(--ink); font-weight: 700; }
+  .toolbar__actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .btn {
+    appearance: none;
+    border: 1px solid var(--strong);
+    background: var(--surface);
+    color: var(--ink);
+    padding: 8px 14px;
+    border-radius: 9px;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.14s ease;
+  }
+  .btn:hover { border-color: var(--ink); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn--primary {
+    background: var(--navy);
+    border-color: var(--navy);
+    color: white;
+  }
+  .btn--primary:hover { background: var(--navy-deep); border-color: var(--navy-deep); }
+  .btn--ghost { background: transparent; border-color: var(--hairline); color: var(--muted); }
+  .btn--ghost:hover { color: var(--ink); border-color: var(--strong); }
+
+  /* Region grid */
+  .regions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  @media (max-width: 880px) { .regions { grid-template-columns: 1fr; } }
+
+  .region {
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: 16px;
+    padding: 22px;
+    transition: border-color 0.16s ease;
+  }
+  .region:hover { border-color: var(--strong); }
+
+  .region__head {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 6px;
+  }
+  .region__icon {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    background: var(--navy-tint);
+    color: var(--navy);
+    display: grid;
+    place-items: center;
+  }
+  .region__title {
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    margin: 0;
+    line-height: 1.2;
+  }
+  .region__desc {
+    font-size: 13.5px;
+    color: var(--muted);
+    margin: 2px 0 0;
+  }
+  .region__meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 14px 0 12px;
+    padding: 8px 0 0;
+    border-top: 1px solid var(--hairline);
+  }
+  .region__count {
+    font-size: 13px;
+    color: var(--subtle);
+    font-weight: 500;
+  }
+  .region__count b { color: var(--navy); font-weight: 700; }
+  .region__quick {
+    display: inline-flex;
+    gap: 4px;
+  }
+  .region__quick button {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--subtle);
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+  }
+  .region__quick button:hover { background: var(--bg-warm); color: var(--navy); }
+
+  /* Suburb checkbox grid */
+  .suburbs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+  }
+  @media (max-width: 480px) { .suburbs { grid-template-columns: 1fr; } }
+
+  .suburb {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.12s ease;
+    user-select: none;
+  }
+  .suburb:hover { background: var(--bg-warm); }
+  .suburb input { position: absolute; opacity: 0; pointer-events: none; }
+  .suburb__box {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    border-radius: 5px;
+    border: 1.75px solid var(--strong);
+    background: var(--surface);
+    display: grid;
+    place-items: center;
+    transition: all 0.12s ease;
+  }
+  .suburb__box svg { opacity: 0; transform: scale(0.6); transition: all 0.14s ease; }
+  .suburb input:checked + .suburb__box {
+    background: var(--navy);
+    border-color: var(--navy);
+  }
+  .suburb input:checked + .suburb__box svg { opacity: 1; transform: scale(1); }
+  .suburb input:focus-visible + .suburb__box {
+    outline: 2px solid var(--navy-bright);
+    outline-offset: 2px;
+  }
+  .suburb__name {
+    font-size: 14.5px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .suburb input:not(:checked) ~ .suburb__name { color: var(--subtle); }
+
+  /* Custom suburb add */
+  .add-suburb {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--hairline);
+  }
+  .add-suburb input {
+    flex: 1;
+    appearance: none;
+    border: 1px solid var(--hairline);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--bg-warm);
+    outline: none;
+  }
+  .add-suburb input:focus {
+    border-color: var(--navy);
+    background: var(--surface);
+  }
+
+  /* Saved view */
+  .saved-region {
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: 16px;
+    padding: 22px;
+    margin-bottom: 16px;
+  }
+  .saved-region__head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .saved-region__title {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .saved-region__chip {
+    display: inline-grid;
+    place-items: center;
+    min-width: 24px;
+    height: 22px;
+    padding: 0 8px;
+    border-radius: 999px;
+    background: var(--navy-tint);
+    color: var(--navy);
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .saved-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .saved-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 11px;
+    border-radius: 999px;
+    background: var(--bg-warm);
+    border: 1px solid var(--hairline);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .saved-tag svg { color: var(--green); }
+  .saved-empty {
+    font-size: 14px;
+    color: var(--subtle);
+    font-style: italic;
+  }
+
+  .saved-meta {
+    background: var(--bg-warm);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    font-size: 13.5px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .saved-meta b { color: var(--ink); }
+
+  /* Sticky save bar */
+  .savebar {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--hairline);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    z-index: 50;
+    transform: translateY(100%);
+    transition: transform 0.22s ease;
+  }
+  .savebar.is-visible { transform: translateY(0); }
+  .savebar__inner {
+    max-width: 1080px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .savebar__msg {
+    font-size: 14px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .savebar__msg b { color: var(--ink); }
+  .savebar__actions { display: flex; gap: 10px; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translate(-50%, -120%);
+    background: var(--ink);
+    color: white;
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 100;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+    transition: transform 0.28s ease;
+  }
+  .toast.is-visible { transform: translate(-50%, 0); }
+  .toast.is-error { background: var(--red); }
+
+  /* Empty placeholder */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--subtle);
+  }
+  .empty-state svg { color: var(--strong); margin-bottom: 12px; }
+
+  /* Spinner */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--hairline);
+    border-top-color: var(--navy);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="brand">
+    <span class="brand__mark">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+    </span>
+    <span>
+      My Mechanic QLD
+      <span class="brand__sub">Service areas</span>
+    </span>
+  </div>
+
+  <h1>Pick the suburbs you service.</h1>
+  <p class="lead">
+    Tick the suburbs where you are happy to take jobs. Untick any you do not want to be listed for. Everything is on by default. Save when you are done, and the website team will build a dedicated page for each suburb you keep.
+  </p>
+
+  <div class="tabs" role="tablist">
+    <button class="tab is-active" data-tab="edit" role="tab" aria-selected="true">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Edit selection
+    </button>
+    <button class="tab" data-tab="view" role="tab" aria-selected="false">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      Saved selection
+      <span class="tab__count" id="tabCount">0</span>
+    </button>
+  </div>
+
+  <div id="status" class="status is-loading">
+    <div class="spinner"></div>
+    <span>Loading your saved selection...</span>
+  </div>
+
+  <!-- EDIT PANEL -->
+  <div class="panel is-active" id="panel-edit" role="tabpanel">
+    <div class="toolbar">
+      <div class="toolbar__summary">
+        <b id="selectedCount">0</b> of <b id="totalCount">0</b> suburbs selected across <b id="regionCount">0</b> regions.
+      </div>
+      <div class="toolbar__actions">
+        <button class="btn btn--ghost" id="selectAllBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Select all
+        </button>
+        <button class="btn btn--ghost" id="deselectAllBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Clear all
+        </button>
+      </div>
+    </div>
+
+    <div class="regions" id="regions"></div>
+  </div>
+
+  <!-- VIEW PANEL -->
+  <div class="panel" id="panel-view" role="tabpanel">
+    <div class="saved-meta" id="savedMeta">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span id="savedMetaText">No saved selection yet.</span>
+    </div>
+    <div id="savedRegions"></div>
+  </div>
+</div>
+
+<!-- Sticky save bar -->
+<div class="savebar" id="savebar">
+  <div class="savebar__inner">
+    <div class="savebar__msg">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="m10.29 3.86-8.18 14.18A2 2 0 0 0 3.84 21h16.32a2 2 0 0 0 1.73-3l-8.18-14.14a2 2 0 0 0-3.42 0z"/></svg>
+      <span><b>Unsaved changes.</b> Hit save to push to Firebase.</span>
+    </div>
+    <div class="savebar__actions">
+      <button class="btn btn--ghost" id="discardBtn">Discard</button>
+      <button class="btn btn--primary" id="saveBtn">
+        <span id="saveBtnLabel">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Save selection
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+import {
+  getFirestore, doc, getDoc, setDoc, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAQDJaHWB3htIzNb1CydxjwHubFf-C3l14",
+  authDomain: "website-6df83.firebaseapp.com",
+  projectId: "website-6df83",
+  storageBucket: "website-6df83.firebasestorage.app",
+  messagingSenderId: "815744094232",
+  appId: "1:815744094232:web:a4546009b4d4533b75b36d"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const SETTINGS_DOC = doc(db, "settings", "service-areas");
+
+// --- Region + suburb master list ---
+// Owner works a 50-60km radius from Springwood. Suburbs the owner already
+// lists publicly are flagged "core". Extras are pulled from common SEQ
+// suburbs in range. The owner can untick anything he does not service.
+const REGIONS = [
+  {
+    id: "brisbane",
+    name: "Brisbane",
+    blurb: "Northside to Bayside, inner west to the Southside.",
+    icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/><path d="M9 18v.01"/></svg>',
+    suburbs: [
+      "Albion","Annerley","Ascot","Ashgrove","Aspley","Auchenflower","Bald Hills","Balmoral","Banyo","Bardon","Bowen Hills","Bracken Ridge","Brighton","Brisbane CBD","Bulimba","Camp Hill","Cannon Hill","Capalaba","Carindale","Carseldine","Chermside","Clayfield","Cleveland","Coorparoo","Eight Mile Plains","Enoggera","Everton Park","Fairfield","Ferny Grove","Forest Lake","Fortitude Valley","Geebung","Graceville","Greenslopes","Hamilton","Hawthorne","Hendra","Holland Park","Indooroopilly","Kangaroo Point","Kedron","Kelvin Grove","Keperra","Lutwyche","MacGregor","Manly","Mansfield","Milton","Mitchelton","Moorooka","Morningside","Mount Gravatt","New Farm","Newmarket","Newstead","Norman Park","Northgate","Nundah","Paddington","Redcliffe","Rochedale","Runcorn","Salisbury","Sandgate","Seven Hills","Sherwood","South Brisbane","Spring Hill","St Lucia","Stafford","Stones Corner","Sunnybank","Tarragindi","The Gap","Tingalpa","Toowong","Upper Mount Gravatt","Virginia","Wavell Heights","West End","Wishart","Woolloongabba","Wynnum","Yeronga","Zillmere"
+    ]
+  },
+  {
+    id: "logan",
+    name: "Logan",
+    blurb: "Home base. Fastest response, often same-day.",
+    icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12 12 3l9 9"/><path d="M5 10v10a1 1 0 0 0 1 1h3v-6h6v6h3a1 1 0 0 0 1-1V10"/><path d="m12 3 9 9-1.5 1.5"/></svg>',
+    suburbs: [
+      "Beenleigh","Bethania","Browns Plains","Cornubia","Crestmead","Daisy Hill","Eagleby","Edens Landing","Hillcrest","Holmview","Jimboomba","Kingston","Logan Central","Logan Reserve","Loganholme","Loganlea","Marsden","Meadowbrook","Park Ridge","Regents Park","Rochedale South","Shailer Park","Slacks Creek","Springwood","Tanah Merah","Underwood","Waterford","Waterford West","Woodridge","Yarrabilba"
+    ]
+  },
+  {
+    id: "ipswich",
+    name: "Ipswich",
+    blurb: "Springfield through Brassall and west to Ipswich CBD.",
+    icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 22h20"/><path d="M6 22V8l6-4 6 4v14"/><path d="M10 22v-6h4v6"/><path d="M9 10h.01"/><path d="M15 10h.01"/></svg>',
+    suburbs: [
+      "Augustine Heights","Bellbird Park","Booval","Brassall","Bundamba","Camira","Collingwood Park","Eastern Heights","Flinders View","Goodna","Ipswich CBD","Karalee","Leichhardt","North Ipswich","One Mile","Raceview","Redbank","Redbank Plains","Ripley","Rosewood","Silkstone","Springfield","Springfield Lakes","Yamanto"
+    ]
+  },
+  {
+    id: "gold-coast",
+    name: "Gold Coast",
+    blurb: "Northern Gold Coast, from Coomera south to Robina.",
+    icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 18c4-3 6-3 10 0s6 3 10 0"/><path d="M2 13c4-3 6-3 10 0s6 3 10 0"/><path d="M12 4v4"/><path d="M9 6l3-3 3 3"/></svg>',
+    suburbs: [
+      "Arundel","Ashmore","Benowa","Biggera Waters","Broadbeach","Bundall","Carrara","Coomera","Helensvale","Hope Island","Labrador","Main Beach","Merrimac","Molendinar","Mudgeeraba","Nerang","Oxenford","Pacific Pines","Parkwood","Robina","Runaway Bay","Southport","Surfers Paradise","Upper Coomera","Worongary"
+    ]
+  }
+];
+
+// --- State ---
+let state = {
+  // Map<regionId, Set<suburbName>>
+  selected: new Map(),
+  // Saved snapshot from Firestore (for "saved" tab + dirty detection)
+  saved: null,
+  savedAt: null,
+  dirty: false,
+  loaded: false
+};
+
+REGIONS.forEach(r => state.selected.set(r.id, new Set(r.suburbs)));
+
+const $ = sel => document.querySelector(sel);
+const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+const CHECK_SVG = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+const PIN_SVG = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
+// --- Render edit panel ---
+function renderRegions() {
+  const root = $("#regions");
+  root.innerHTML = "";
+  REGIONS.forEach(region => {
+    const card = document.createElement("div");
+    card.className = "region";
+    card.dataset.region = region.id;
+
+    const sel = state.selected.get(region.id);
+    const total = region.suburbs.length;
+    const count = sel.size;
+
+    card.innerHTML = `
+      <div class="region__head">
+        <div class="region__icon">${region.icon}</div>
+        <div>
+          <h2 class="region__title">${region.name}</h2>
+          <p class="region__desc">${region.blurb}</p>
+        </div>
+      </div>
+      <div class="region__meta">
+        <span class="region__count"><b data-count>${count}</b> of ${total} selected</span>
+        <span class="region__quick">
+          <button data-action="all">All</button>
+          <button data-action="none">None</button>
+        </span>
+      </div>
+      <div class="suburbs"></div>
+      <div class="add-suburb">
+        <input type="text" placeholder="Add a suburb in ${region.name}..." data-add-input maxlength="40" />
+        <button class="btn btn--ghost" data-add-btn>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add
+        </button>
+      </div>
+    `;
+
+    const list = card.querySelector(".suburbs");
+    region.suburbs.forEach(s => list.appendChild(suburbRow(region.id, s)));
+
+    card.querySelector('[data-action="all"]').addEventListener("click", () => {
+      region.suburbs.forEach(s => state.selected.get(region.id).add(s));
+      markDirty();
+      renderRegions();
+    });
+    card.querySelector('[data-action="none"]').addEventListener("click", () => {
+      state.selected.get(region.id).clear();
+      markDirty();
+      renderRegions();
+    });
+
+    const addInput = card.querySelector("[data-add-input]");
+    const addBtn = card.querySelector("[data-add-btn]");
+    const doAdd = () => {
+      const raw = addInput.value.trim();
+      if (!raw) return;
+      const name = raw.replace(/\s+/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      if (region.suburbs.includes(name)) {
+        addInput.value = "";
+        toast("Already in the list.", "error");
+        return;
+      }
+      region.suburbs.push(name);
+      region.suburbs.sort((a, b) => a.localeCompare(b));
+      state.selected.get(region.id).add(name);
+      markDirty();
+      renderRegions();
+    };
+    addBtn.addEventListener("click", doAdd);
+    addInput.addEventListener("keydown", e => {
+      if (e.key === "Enter") { e.preventDefault(); doAdd(); }
+    });
+
+    root.appendChild(card);
+  });
+
+  updateCounts();
+}
+
+function suburbRow(regionId, name) {
+  const sel = state.selected.get(regionId);
+  const id = `s_${regionId}_${name.replace(/\W+/g, "_")}`;
+  const label = document.createElement("label");
+  label.className = "suburb";
+  label.htmlFor = id;
+  label.innerHTML = `
+    <input type="checkbox" id="${id}" ${sel.has(name) ? "checked" : ""} />
+    <span class="suburb__box">${CHECK_SVG}</span>
+    <span class="suburb__name">${name}</span>
+  `;
+  label.querySelector("input").addEventListener("change", e => {
+    if (e.target.checked) sel.add(name);
+    else sel.delete(name);
+    markDirty();
+    updateCounts();
+  });
+  return label;
+}
+
+function updateCounts() {
+  let totalSelected = 0, totalAll = 0, regionsWithPick = 0;
+  REGIONS.forEach(r => {
+    const count = state.selected.get(r.id).size;
+    totalSelected += count;
+    totalAll += r.suburbs.length;
+    if (count > 0) regionsWithPick++;
+    const el = document.querySelector(`.region[data-region="${r.id}"] [data-count]`);
+    if (el) el.textContent = count;
+  });
+  $("#selectedCount").textContent = totalSelected;
+  $("#totalCount").textContent = totalAll;
+  $("#regionCount").textContent = regionsWithPick;
+  $("#tabCount").textContent = state.saved
+    ? Object.values(state.saved).reduce((n, arr) => n + arr.length, 0)
+    : 0;
+}
+
+// --- Render saved view ---
+function renderSaved() {
+  const root = $("#savedRegions");
+  const metaText = $("#savedMetaText");
+  root.innerHTML = "";
+
+  if (!state.saved) {
+    metaText.innerHTML = "No saved selection yet. Pick suburbs in the Edit tab, then hit Save.";
+    root.innerHTML = `
+      <div class="empty-state">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+        <p>Nothing saved to Firebase yet.</p>
+      </div>`;
+    return;
+  }
+
+  const when = state.savedAt
+    ? new Date(state.savedAt).toLocaleString("en-AU", { dateStyle: "medium", timeStyle: "short" })
+    : "unknown";
+  const total = Object.values(state.saved).reduce((n, arr) => n + arr.length, 0);
+  metaText.innerHTML = `<b>${total} suburbs</b> saved. Last updated <b>${when}</b>.`;
+
+  REGIONS.forEach(region => {
+    const list = state.saved[region.id] || [];
+    const card = document.createElement("div");
+    card.className = "saved-region";
+    card.innerHTML = `
+      <div class="saved-region__head">
+        <div class="region__icon" style="width:36px;height:36px">${region.icon}</div>
+        <h3 class="saved-region__title">${region.name}</h3>
+        <span class="saved-region__chip">${list.length}</span>
+      </div>
+      <div class="saved-list">
+        ${list.length === 0
+          ? '<span class="saved-empty">No suburbs selected in this region.</span>'
+          : list.map(s => `<span class="saved-tag">${PIN_SVG}${s}</span>`).join("")}
+      </div>
+    `;
+    root.appendChild(card);
+  });
+}
+
+// --- Tabs ---
+$$(".tab").forEach(btn => {
+  btn.addEventListener("click", () => {
+    $$(".tab").forEach(t => { t.classList.remove("is-active"); t.setAttribute("aria-selected", "false"); });
+    btn.classList.add("is-active");
+    btn.setAttribute("aria-selected", "true");
+    const target = btn.dataset.tab;
+    $$(".panel").forEach(p => p.classList.remove("is-active"));
+    $(`#panel-${target}`).classList.add("is-active");
+    if (target === "view") renderSaved();
+  });
+});
+
+// --- Toolbar ---
+$("#selectAllBtn").addEventListener("click", () => {
+  REGIONS.forEach(r => r.suburbs.forEach(s => state.selected.get(r.id).add(s)));
+  markDirty();
+  renderRegions();
+});
+$("#deselectAllBtn").addEventListener("click", () => {
+  REGIONS.forEach(r => state.selected.get(r.id).clear());
+  markDirty();
+  renderRegions();
+});
+
+// --- Dirty / savebar ---
+function markDirty() {
+  state.dirty = true;
+  $("#savebar").classList.add("is-visible");
+}
+function markClean() {
+  state.dirty = false;
+  $("#savebar").classList.remove("is-visible");
+}
+
+$("#discardBtn").addEventListener("click", () => {
+  if (!confirm("Discard your unsaved changes and revert to the last saved selection?")) return;
+  applySnapshot(state.saved);
+  markClean();
+  renderRegions();
+});
+
+// --- Firestore I/O ---
+async function load() {
+  const status = $("#status");
+  try {
+    const snap = await getDoc(SETTINGS_DOC);
+    if (snap.exists()) {
+      const data = snap.data();
+      state.saved = data.regions || {};
+      state.savedAt = data.updatedAtMs || null;
+      applySnapshot(state.saved);
+      status.className = "status";
+      status.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <span>Loaded saved selection from Firebase. ${state.savedAt ? "Last updated " + new Date(state.savedAt).toLocaleString("en-AU") : ""}</span>
+      `;
+    } else {
+      state.saved = null;
+      status.className = "status";
+      status.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>No saved selection found yet. Everything is selected by default. Save when ready.</span>
+      `;
+      markDirty();
+    }
+    state.loaded = true;
+    renderRegions();
+  } catch (err) {
+    console.error(err);
+    status.className = "status is-error";
+    status.innerHTML = `
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span>Could not load from Firebase: ${err.message}. Check your Firestore rules.</span>
+    `;
+    state.loaded = true;
+    renderRegions();
+  }
+}
+
+function applySnapshot(snap) {
+  REGIONS.forEach(r => {
+    state.selected.get(r.id).clear();
+    if (snap && snap[r.id]) {
+      snap[r.id].forEach(s => {
+        if (!r.suburbs.includes(s)) r.suburbs.push(s);
+        state.selected.get(r.id).add(s);
+      });
+      r.suburbs.sort((a, b) => a.localeCompare(b));
+    } else {
+      r.suburbs.forEach(s => state.selected.get(r.id).add(s));
+    }
+  });
+}
+
+$("#saveBtn").addEventListener("click", save);
+
+async function save() {
+  const btn = $("#saveBtn");
+  const label = $("#saveBtnLabel");
+  btn.disabled = true;
+  label.innerHTML = `<div class="spinner" style="width:14px;height:14px"></div> Saving...`;
+
+  const payload = {};
+  REGIONS.forEach(r => {
+    payload[r.id] = Array.from(state.selected.get(r.id)).sort((a, b) => a.localeCompare(b));
+  });
+  const now = Date.now();
+
+  try {
+    await setDoc(SETTINGS_DOC, {
+      regions: payload,
+      regionMeta: REGIONS.map(r => ({ id: r.id, name: r.name })),
+      updatedAt: serverTimestamp(),
+      updatedAtMs: now
+    });
+    state.saved = payload;
+    state.savedAt = now;
+    markClean();
+    toast("Saved to Firebase.");
+    updateCounts();
+  } catch (err) {
+    console.error(err);
+    toast("Save failed: " + err.message, "error");
+  } finally {
+    btn.disabled = false;
+    label.innerHTML = `
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Save selection
+    `;
+  }
+}
+
+// Warn on close if dirty
+window.addEventListener("beforeunload", e => {
+  if (state.dirty) { e.preventDefault(); e.returnValue = ""; }
+});
+
+// --- Toast ---
+let toastTimer;
+function toast(msg, kind = "ok") {
+  const t = $("#toast");
+  t.textContent = "";
+  const icon = kind === "error"
+    ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'
+    : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  t.innerHTML = icon + "<span>" + msg + "</span>";
+  t.classList.toggle("is-error", kind === "error");
+  t.classList.add("is-visible");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("is-visible"), 2400);
+}
+
+// Boot
+renderRegions();
+load();
+</script>
+
+</body>
+</html>
