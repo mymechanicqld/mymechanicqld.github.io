@@ -1,0 +1,1597 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#1E3A8A" />
+<title>Google Ads Campaign · My Mechanic QLD</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
+
+<style>
+  /* ────────────────────────────────────────────────────────────────────
+     My Mechanic QLD — Google Ads campaign selector
+     One-file admin tool. Owner picks the keywords, negative keywords and
+     suburbs they want to target. Selections are saved to the same
+     Firebase project (`website-6df83`) used by /tools/service-areas.html.
+     ─────────────────────────────────────────────────────────────────── */
+
+  :root {
+    --navy:        #1E3A8A;
+    --navy-deep:   #1A2E6E;
+    --navy-bright: #2563EB;
+    --navy-tint:   #E8EEFB;
+
+    --bg:        #FAFAF8;
+    --bg-warm:   #F5F4EF;
+    --surface:   #FFFFFF;
+    --ink:       #0C0A09;
+    --muted:     #44403C;
+    --subtle:    #78716C;
+    --hairline:  #E7E5E0;
+    --strong:    #D6D3CB;
+
+    --green:      #15803D;
+    --green-tint: #DCFCE7;
+    --amber:      #B45309;
+    --amber-tint: #FEF3C7;
+    --red:        #B91C1C;
+    --red-tint:   #FEE2E2;
+    --purple:     #6B21A8;
+    --purple-tint:#F3E8FF;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: 110px;
+  }
+
+  /* ── Page shell ─────────────────────────────── */
+  .wrap {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 36px 24px 24px;
+  }
+  @media (max-width: 700px) {
+    .wrap { padding: 22px 16px 16px; }
+  }
+
+  .brand {
+    display: flex; align-items: center; gap: 12px;
+    font-weight: 800; font-size: 17px; letter-spacing: -0.01em;
+    margin-bottom: 28px;
+  }
+  .brand__mark {
+    width: 38px; height: 38px; border-radius: 9px; background: var(--navy);
+    display: grid; place-items: center; color: white;
+    flex-shrink: 0;
+  }
+  .brand__mark svg { width: 22px; height: 22px; }
+  .brand__sub { font-weight: 500; color: var(--subtle); font-size: 13px; }
+  .brand__sub::before { content: '·'; margin: 0 6px; color: var(--hairline); }
+
+  h1 {
+    font-size: 32px; line-height: 1.1; letter-spacing: -0.02em;
+    font-weight: 800; margin: 0 0 10px; color: var(--ink);
+  }
+  .lead {
+    font-size: 15.5px; color: var(--muted); margin: 0 0 26px;
+    max-width: 70ch; line-height: 1.6;
+  }
+  @media (max-width: 700px) { h1 { font-size: 26px; } }
+
+  /* ── Status banner ─────────────────────────── */
+  .status {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 14px; border-radius: 10px;
+    border: 1px solid var(--hairline); background: var(--surface);
+    font-size: 13.5px; color: var(--muted); margin-bottom: 16px;
+  }
+  .status.is-loading { background: var(--bg-warm); }
+  .status.is-error   { background: var(--red-tint);   border-color: #FCA5A5; color: var(--red); }
+  .status.is-saved   { background: var(--green-tint); border-color: #86EFAC; color: var(--green); }
+  .status.is-dirty   { background: var(--amber-tint); border-color: #FCD34D; color: var(--amber); }
+  .status svg { flex-shrink: 0; }
+
+  /* ── Tabs ─────────────────────────────────── */
+  .tabs {
+    display: flex; gap: 4px;
+    background: var(--bg-warm);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tab {
+    appearance: none; border: 0; background: transparent;
+    padding: 9px 14px; border-radius: 9px;
+    font: inherit; font-size: 14px; font-weight: 600;
+    color: var(--muted); cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px;
+    white-space: nowrap;
+    transition: all 0.16s ease;
+    flex-shrink: 0;
+  }
+  .tab:hover { color: var(--ink); }
+  .tab.is-active {
+    background: var(--surface); color: var(--navy);
+    box-shadow: 0 1px 3px rgba(12, 10, 9, 0.06), 0 0 0 1px var(--hairline);
+  }
+  .tab__count {
+    display: inline-grid; place-items: center;
+    min-width: 22px; height: 20px; padding: 0 6px;
+    border-radius: 999px;
+    background: var(--navy-tint); color: var(--navy);
+    font-size: 11.5px; font-weight: 700; line-height: 1;
+  }
+  .tab:not(.is-active) .tab__count {
+    background: var(--hairline); color: var(--muted);
+  }
+
+  /* ── Panels ───────────────────────────────── */
+  .panel { display: none; }
+  .panel.is-active { display: block; }
+
+  /* ── Toolbar (search + filter chips) ─────── */
+  .toolbar {
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .toolbar__row {
+    display: flex; gap: 10px; align-items: center;
+    flex-wrap: wrap;
+  }
+  .toolbar__summary {
+    font-size: 13.5px; color: var(--muted); flex: 1; min-width: 200px;
+  }
+  .toolbar__summary b { color: var(--ink); font-weight: 700; }
+  .toolbar__actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  .search {
+    position: relative;
+    flex: 1; min-width: 220px;
+  }
+  .search input {
+    width: 100%;
+    appearance: none;
+    border: 1px solid var(--strong);
+    background: var(--surface);
+    padding: 9px 12px 9px 34px;
+    border-radius: 9px;
+    font: inherit; font-size: 14px; color: var(--ink);
+    transition: border-color 0.14s ease, box-shadow 0.14s ease;
+  }
+  .search input:focus {
+    outline: none;
+    border-color: var(--navy);
+    box-shadow: 0 0 0 3px var(--navy-tint);
+  }
+  .search svg {
+    position: absolute;
+    top: 50%; left: 11px; transform: translateY(-50%);
+    color: var(--subtle); pointer-events: none;
+  }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    appearance: none; border: 1px solid var(--strong);
+    background: var(--surface); color: var(--muted);
+    padding: 6px 11px; border-radius: 999px;
+    font: inherit; font-size: 12.5px; font-weight: 600;
+    cursor: pointer;
+    transition: all 0.14s ease;
+  }
+  .chip:hover { color: var(--ink); border-color: var(--ink); }
+  .chip.is-active {
+    background: var(--navy); border-color: var(--navy); color: white;
+  }
+  .chip__count {
+    display: inline-block;
+    margin-left: 4px;
+    color: inherit; opacity: 0.65;
+    font-weight: 500;
+  }
+  .chip.is-active .chip__count { opacity: 0.8; }
+
+  .btn {
+    appearance: none; border: 1px solid var(--strong);
+    background: var(--surface); color: var(--ink);
+    padding: 8px 13px; border-radius: 9px;
+    font: inherit; font-size: 13px; font-weight: 600;
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: all 0.14s ease;
+  }
+  .btn:hover { border-color: var(--ink); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn--ghost { background: transparent; border-color: var(--hairline); color: var(--muted); }
+  .btn--ghost:hover { color: var(--ink); border-color: var(--strong); }
+  .btn--primary { background: var(--navy); border-color: var(--navy); color: white; }
+  .btn--primary:hover { background: var(--navy-deep); border-color: var(--navy-deep); }
+
+  /* ── Group ─────────────────────────────────── */
+  .group {
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: 16px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .group__head {
+    padding: 16px 18px 14px;
+    border-bottom: 1px solid var(--hairline);
+    background: linear-gradient(180deg, var(--bg-warm) 0%, transparent 100%);
+  }
+  .group__title-row {
+    display: flex; align-items: center; gap: 10px;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  .group__title-left {
+    display: flex; align-items: center; gap: 10px; min-width: 0;
+  }
+  .group__icon {
+    width: 30px; height: 30px; flex-shrink: 0;
+    border-radius: 8px;
+    background: var(--navy-tint); color: var(--navy);
+    display: grid; place-items: center;
+  }
+  .group__icon svg { width: 16px; height: 16px; }
+  .group__title {
+    font-size: 15px; font-weight: 800; letter-spacing: -0.005em;
+    margin: 0;
+  }
+  .group__desc {
+    font-size: 13px; color: var(--muted); margin: 2px 0 0; line-height: 1.5;
+  }
+  .group__count {
+    font-size: 12.5px; font-weight: 600;
+    color: var(--subtle);
+    background: var(--bg-warm);
+    padding: 4px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .group__count b { color: var(--navy); font-weight: 700; }
+
+  .group__bulk {
+    display: inline-flex;
+    gap: 4px;
+    margin-top: 10px;
+  }
+  .group__bulk button {
+    appearance: none; border: 0;
+    background: transparent; color: var(--subtle);
+    padding: 3px 9px; border-radius: 6px;
+    font: inherit; font-size: 12px; font-weight: 600;
+    cursor: pointer;
+    transition: all 0.14s ease;
+  }
+  .group__bulk button:hover { background: var(--bg-warm); color: var(--ink); }
+
+  /* ── Items ─────────────────────────────────── */
+  .items {
+    padding: 14px 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.12s ease;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .item:hover { background: var(--bg-warm); }
+  .item.is-on { background: var(--navy-tint); }
+  .item.is-on .item__check {
+    background: var(--navy); border-color: var(--navy); color: white;
+  }
+  .item__check {
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    border: 1.5px solid var(--strong);
+    background: var(--surface);
+    flex-shrink: 0;
+    display: grid; place-items: center;
+    transition: all 0.14s ease;
+  }
+  .item__check svg { opacity: 0; transition: opacity 0.14s ease; }
+  .item.is-on .item__check svg { opacity: 1; }
+  .item__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  .item__label {
+    font-size: 14.5px; font-weight: 600; color: var(--ink);
+    word-break: break-word;
+  }
+  .item.is-on .item__label { color: var(--navy-deep); }
+  .item__tags {
+    display: flex; gap: 5px; flex-wrap: wrap;
+    margin-top: 2px;
+  }
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    background: var(--hairline);
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .tag--rec    { background: var(--green-tint);  color: var(--green); }
+  .tag--hot    { background: var(--red-tint);    color: var(--red); }
+  .tag--brand  { background: var(--purple-tint); color: var(--purple); }
+  .tag--exact  { background: var(--navy-tint);   color: var(--navy); }
+  .tag--broad  { background: var(--amber-tint);  color: var(--amber); }
+  .tag--vehicle, .tag--geo, .tag--service, .tag--diy, .tag--info, .tag--low {
+    background: var(--bg-warm); color: var(--muted);
+  }
+
+  /* Add-custom row */
+  .add-row {
+    display: flex; gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--hairline);
+    background: var(--bg-warm);
+  }
+  .add-row input {
+    flex: 1;
+    appearance: none;
+    border: 1px solid var(--strong);
+    background: var(--surface);
+    padding: 8px 12px;
+    border-radius: 9px;
+    font: inherit; font-size: 14px;
+  }
+  .add-row input:focus {
+    outline: none;
+    border-color: var(--navy);
+    box-shadow: 0 0 0 3px var(--navy-tint);
+  }
+  .add-row button {
+    appearance: none; border: 1px dashed var(--navy);
+    background: var(--navy-tint); color: var(--navy);
+    padding: 8px 14px; border-radius: 9px;
+    font: inherit; font-size: 13px; font-weight: 700;
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+    white-space: nowrap;
+  }
+  .add-row button:hover { background: var(--navy); color: white; }
+
+  /* ── Sticky save bar ───────────────────────── */
+  .savebar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 50;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: saturate(180%) blur(10px);
+    -webkit-backdrop-filter: saturate(180%) blur(10px);
+    border-top: 1px solid var(--hairline);
+    padding: 14px 16px;
+    padding-bottom: calc(14px + env(safe-area-inset-bottom));
+  }
+  .savebar__inner {
+    max-width: 1120px;
+    margin: 0 auto;
+    display: flex; align-items: center;
+    gap: 14px;
+  }
+  .savebar__summary {
+    font-size: 13.5px; color: var(--muted); flex: 1; min-width: 0;
+    line-height: 1.4;
+  }
+  .savebar__summary b { color: var(--ink); font-weight: 700; }
+  .savebar__summary .dim { color: var(--subtle); }
+  .save-btn {
+    appearance: none;
+    border: 0;
+    background: var(--navy); color: white;
+    padding: 12px 22px;
+    border-radius: 10px;
+    font: inherit; font-size: 15px; font-weight: 700;
+    letter-spacing: -0.005em;
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: all 0.14s ease;
+    flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 14px rgba(30,58,138,0.18);
+  }
+  .save-btn:hover:not(:disabled) { background: var(--navy-deep); }
+  .save-btn:disabled { background: var(--strong); color: var(--subtle); cursor: not-allowed; box-shadow: none; }
+  .save-btn--loading { pointer-events: none; opacity: 0.8; }
+  .save-btn--loading::after {
+    content: ''; width: 14px; height: 14px;
+    border: 2px solid currentColor; border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin-left: 4px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Toast ─────────────────────────────────── */
+  .toast {
+    position: fixed;
+    bottom: calc(96px + env(safe-area-inset-bottom));
+    left: 50%; transform: translateX(-50%) translateY(8px);
+    padding: 12px 18px;
+    border-radius: 10px;
+    background: var(--ink);
+    color: white;
+    font-size: 14px; font-weight: 500;
+    box-shadow: 0 14px 40px rgba(0,0,0,0.18);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 100;
+    max-width: calc(100vw - 32px);
+    text-align: center;
+  }
+  .toast.is-on { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.is-error { background: var(--red); }
+  .toast.is-success { background: var(--green); }
+
+  /* ── Empty state ───────────────────────────── */
+  .empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--subtle);
+    font-size: 14px;
+  }
+  .empty svg { color: var(--strong); margin-bottom: 8px; }
+
+  /* ── Tips callout (expert recs) ─────────────── */
+  .tips {
+    background: var(--navy-tint);
+    border: 1px solid #C7D2FE;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 18px;
+    font-size: 13.5px;
+    color: var(--navy-deep);
+    line-height: 1.55;
+  }
+  .tips__title {
+    font-weight: 700; font-size: 12.5px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin-bottom: 6px;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .tips ul { margin: 0; padding-left: 18px; }
+  .tips li { margin-bottom: 3px; }
+  .tips li:last-child { margin-bottom: 0; }
+
+  /* ── Bulk toolbar in toolbar __row for cross-group actions ─ */
+  .legend {
+    display: flex; flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--subtle);
+  }
+  .legend span { white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- Brand -->
+  <div class="brand">
+    <span class="brand__mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    </span>
+    <span>
+      My Mechanic QLD
+      <span class="brand__sub">Google Ads campaign</span>
+    </span>
+  </div>
+
+  <h1>Plan the Google Ads campaign</h1>
+  <p class="lead">
+    Pick the keywords you want to bid on, the searches you want to block, and the suburbs you want the ads to show in. Recommended picks are pre-ticked. When you're happy, hit <b>Save</b> — selections sync to Firebase and we'll use them to launch the campaign.
+  </p>
+
+  <!-- Status -->
+  <div class="status" id="status">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+    <span id="statusText">Connecting to Firebase…</span>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs" role="tablist">
+    <button class="tab is-active" role="tab" data-tab="keywords">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Keywords
+      <span class="tab__count" id="kwCount">0</span>
+    </button>
+    <button class="tab" role="tab" data-tab="negatives">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+      Negative keywords
+      <span class="tab__count" id="negCount">0</span>
+    </button>
+    <button class="tab" role="tab" data-tab="locations">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      Locations
+      <span class="tab__count" id="locCount">0</span>
+    </button>
+  </div>
+
+  <!-- ─────────── KEYWORDS PANEL ─────────── -->
+  <section class="panel is-active" id="panel-keywords">
+    <div class="tips">
+      <div class="tips__title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        How to pick keywords
+      </div>
+      <ul>
+        <li><b>Recommended</b> picks are pre-selected — start there for the best return.</li>
+        <li><b>High-intent</b> tags mark searches with emergency or "ready to book" energy. These convert best.</li>
+        <li>Use <b>phrase</b> match for service-led terms ("brake repair brisbane"), <b>broad</b> for symptoms ("car won't start") so close variants get captured.</li>
+        <li>Pick fewer keywords with stronger intent over a long list — quality always beats quantity on a local campaign.</li>
+      </ul>
+    </div>
+
+    <div class="toolbar">
+      <div class="toolbar__row">
+        <div class="search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="search" id="kwSearch" placeholder="Search keywords…" />
+        </div>
+        <div class="toolbar__actions">
+          <button class="btn btn--ghost" data-action="kw-select-recommended">Select recommended</button>
+          <button class="btn btn--ghost" data-action="kw-clear">Clear all</button>
+        </div>
+      </div>
+      <div class="chips" id="kwFilters"></div>
+    </div>
+
+    <div id="kwList"></div>
+  </section>
+
+  <!-- ─────────── NEGATIVES PANEL ─────────── -->
+  <section class="panel" id="panel-negatives">
+    <div class="tips">
+      <div class="tips__title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        Why negatives matter
+      </div>
+      <ul>
+        <li>Every irrelevant click costs money. A solid negative list typically saves <b>15-30% of monthly spend</b>.</li>
+        <li>We've grouped them by reason — forbidden services (air-con, motorbikes), DIY searchers, jobseekers, competitor brands, wrong locations.</li>
+        <li>Recommended ones are pre-ticked. Untick only if you specifically want those searches.</li>
+      </ul>
+    </div>
+
+    <div class="toolbar">
+      <div class="toolbar__row">
+        <div class="search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="search" id="negSearch" placeholder="Search negatives…" />
+        </div>
+        <div class="toolbar__actions">
+          <button class="btn btn--ghost" data-action="neg-select-all">Select all</button>
+          <button class="btn btn--ghost" data-action="neg-clear">Clear all</button>
+        </div>
+      </div>
+      <div class="chips" id="negFilters"></div>
+    </div>
+
+    <div id="negList"></div>
+  </section>
+
+  <!-- ─────────── LOCATIONS PANEL ─────────── -->
+  <section class="panel" id="panel-locations">
+    <div class="tips">
+      <div class="tips__title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        Targeting the right suburbs
+      </div>
+      <ul>
+        <li>42 suburbs across East &amp; Southeast Brisbane plus the Springwood / Logan core — these are where you can respond fastest.</li>
+        <li>Google Ads also targets "people regularly in these locations" by default, so a Sunnybank resident at work in the CBD still sees the ad.</li>
+        <li>Untick anywhere you don't want to travel. Less radius = better CPC and faster jobs.</li>
+      </ul>
+    </div>
+
+    <div class="toolbar">
+      <div class="toolbar__row">
+        <div class="search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="search" id="locSearch" placeholder="Search suburbs…" />
+        </div>
+        <div class="toolbar__actions">
+          <button class="btn btn--ghost" data-action="loc-select-all">Select all</button>
+          <button class="btn btn--ghost" data-action="loc-clear">Clear all</button>
+        </div>
+      </div>
+      <div class="chips" id="locFilters"></div>
+    </div>
+
+    <div id="locList"></div>
+  </section>
+
+</div>
+
+<!-- Sticky save bar -->
+<div class="savebar">
+  <div class="savebar__inner">
+    <div class="savebar__summary" id="saveSummary">
+      <b>0</b> keywords <span class="dim">·</span> <b>0</b> negatives <span class="dim">·</span> <b>0</b> locations
+      <div id="saveMeta" class="dim" style="font-size:12.5px;margin-top:2px;"></div>
+    </div>
+    <button class="save-btn" id="saveBtn" disabled>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+      Save campaign
+    </button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+/* ────────────────────────────────────────────────────────────────────
+   Firebase — same project as /tools/service-areas.html. Saved into a
+   new document: settings/google-ads.
+   ─────────────────────────────────────────────────────────────────── */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+import {
+  getFirestore, doc, getDoc, setDoc, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAQDJaHWB3htIzNb1CydxjwHubFf-C3l14",
+  authDomain: "website-6df83.firebaseapp.com",
+  projectId: "website-6df83",
+  storageBucket: "website-6df83.firebasestorage.app",
+  messagingSenderId: "815744094232",
+  appId: "1:815744094232:web:a4546009b4d4533b75b36d"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const SETTINGS_DOC = doc(db, "settings", "google-ads");
+
+/* ────────────────────────────────────────────────────────────────────
+   KEYWORD CATALOGUE
+   Categorised, pre-tagged. `rec` items are pre-selected on first load.
+   Tags surface as little badges next to each keyword.
+   ─────────────────────────────────────────────────────────────────── */
+const KEYWORDS = [
+  // A — Core local mobile-mechanic ────────────────────────────────────
+  { id: 'core-1',  group: 'core',     label: 'mobile mechanic brisbane',          tags: ['rec', 'exact'] },
+  { id: 'core-2',  group: 'core',     label: 'mobile mechanic near me',           tags: ['rec', 'broad'] },
+  { id: 'core-3',  group: 'core',     label: 'mobile mechanic logan',             tags: ['rec', 'exact'] },
+  { id: 'core-4',  group: 'core',     label: 'mobile mechanic southside brisbane',tags: ['rec', 'phrase'] },
+  { id: 'core-5',  group: 'core',     label: 'mechanic that comes to you',        tags: ['phrase'] },
+  { id: 'core-6',  group: 'core',     label: 'mobile mechanic ipswich',           tags: ['exact'] },
+  { id: 'core-7',  group: 'core',     label: 'mobile mechanic gold coast',        tags: ['exact'] },
+  { id: 'core-8',  group: 'core',     label: 'mobile car repair brisbane',        tags: ['rec', 'phrase'] },
+
+  // B — Symptom / emergency ───────────────────────────────────────────
+  { id: 'sym-1',   group: 'symptom',  label: "car won't start brisbane",          tags: ['rec', 'hot', 'broad'] },
+  { id: 'sym-2',   group: 'symptom',  label: 'emergency mobile mechanic brisbane',tags: ['rec', 'hot'] },
+  { id: 'sym-3',   group: 'symptom',  label: 'car broke down brisbane',           tags: ['hot', 'broad'] },
+  { id: 'sym-4',   group: 'symptom',  label: 'car overheating brisbane',          tags: ['rec', 'hot'] },
+  { id: 'sym-5',   group: 'symptom',  label: 'weekend mobile mechanic brisbane',  tags: ['rec', 'phrase'] },
+  { id: 'sym-6',   group: 'symptom',  label: 'saturday mechanic brisbane',        tags: ['phrase'] },
+
+  // C — Brake repair (top priority) ───────────────────────────────────
+  { id: 'brk-1',   group: 'brake',    label: 'mobile brake repair brisbane',      tags: ['rec', 'exact'] },
+  { id: 'brk-2',   group: 'brake',    label: 'brake pads replacement brisbane',   tags: ['rec', 'phrase'] },
+  { id: 'brk-3',   group: 'brake',    label: 'brake disc replacement brisbane',   tags: ['phrase'] },
+  { id: 'brk-4',   group: 'brake',    label: 'squeaky brakes brisbane',           tags: ['hot', 'broad'] },
+
+  // D — Logbook / general service (top priority) ──────────────────────
+  { id: 'log-1',   group: 'logbook',  label: 'mobile logbook service brisbane',   tags: ['rec', 'exact'] },
+  { id: 'log-2',   group: 'logbook',  label: 'mobile car service brisbane',       tags: ['rec', 'exact'] },
+  { id: 'log-3',   group: 'logbook',  label: 'logbook service near me',           tags: ['rec', 'phrase'] },
+  { id: 'log-4',   group: 'logbook',  label: 'mobile car service near me',        tags: ['phrase'] },
+
+  // E — Pre-purchase inspection ───────────────────────────────────────
+  { id: 'ppi-1',   group: 'ppi',      label: 'pre purchase car inspection brisbane', tags: ['rec', 'exact'] },
+  { id: 'ppi-2',   group: 'ppi',      label: 'mobile pre purchase inspection brisbane', tags: ['rec', 'phrase'] },
+  { id: 'ppi-3',   group: 'ppi',      label: 'used car inspection brisbane',      tags: ['phrase'] },
+
+  // F — Battery ───────────────────────────────────────────────────────
+  { id: 'bat-1',   group: 'battery',  label: 'mobile car battery replacement brisbane', tags: ['rec', 'exact'] },
+  { id: 'bat-2',   group: 'battery',  label: 'car battery delivery and install brisbane', tags: ['phrase'] },
+
+  // G — Alternator / starter motor (top priority) ─────────────────────
+  { id: 'alt-1',   group: 'alt',      label: 'mobile alternator replacement brisbane', tags: ['rec', 'exact'] },
+  { id: 'alt-2',   group: 'alt',      label: 'car alternator repair brisbane',    tags: ['phrase'] },
+  { id: 'alt-3',   group: 'alt',      label: 'starter motor replacement brisbane',tags: ['rec', 'phrase'] },
+
+  // H — Radiator / cooling (top priority) ─────────────────────────────
+  { id: 'rad-1',   group: 'cooling',  label: 'mobile radiator repair brisbane',   tags: ['rec', 'exact'] },
+  { id: 'rad-2',   group: 'cooling',  label: 'water pump replacement brisbane',   tags: ['phrase'] },
+  { id: 'rad-3',   group: 'cooling',  label: 'car cooling system repair brisbane',tags: ['phrase'] },
+
+  // I — Diagnostics ───────────────────────────────────────────────────
+  { id: 'diag-1',  group: 'diag',     label: 'check engine light diagnostic brisbane', tags: ['rec', 'exact'] },
+  { id: 'diag-2',  group: 'diag',     label: 'car diagnostic brisbane',           tags: ['phrase'] },
+
+  // J — Steering / suspension ─────────────────────────────────────────
+  { id: 'sus-1',   group: 'suspension', label: 'car suspension repair brisbane',  tags: ['phrase'] },
+  { id: 'sus-2',   group: 'suspension', label: 'mobile shock absorber replacement brisbane', tags: ['exact'] },
+
+  // K — Trust / commercial ────────────────────────────────────────────
+  { id: 'trust-1', group: 'trust',    label: 'fixed price mobile mechanic brisbane', tags: ['rec', 'phrase'] },
+  { id: 'trust-2', group: 'trust',    label: 'best mobile mechanic brisbane',     tags: ['phrase'] },
+];
+
+const KEYWORD_GROUPS = [
+  { id: 'core',       name: 'Core local',        desc: 'Generic "mobile mechanic" searches across the service area. The bread and butter — bid here first.', icon: 'pin' },
+  { id: 'symptom',    name: 'Symptom &amp; emergency', desc: 'Highest-intent searches. Someone broken down typing this on their phone is ready to call.', icon: 'alert' },
+  { id: 'brake',      name: 'Brake repair',      desc: 'Top-priority service. Strong consistent volume in Brisbane.', icon: 'disc' },
+  { id: 'logbook',    name: 'Logbook &amp; servicing', desc: 'Top-priority service. Repeat-customer territory — every booking is a lead for next year too.', icon: 'tool' },
+  { id: 'ppi',        name: 'Pre-purchase inspection', desc: 'Narrow audience, very high-intent. Each lead is worth $250-$450+.', icon: 'list' },
+  { id: 'battery',    name: 'Battery replacement', desc: 'Quick same-day jobs. Often turns into a longer repair conversation.', icon: 'battery' },
+  { id: 'alt',        name: 'Alternator &amp; starter', desc: 'Top-priority service. High-margin, urgent jobs.', icon: 'bolt' },
+  { id: 'cooling',    name: 'Radiator &amp; cooling', desc: 'Top-priority service. Peaks in summer.', icon: 'drop' },
+  { id: 'diag',       name: 'Warning-light diagnostics', desc: 'Strong gateway service. Often unlocks bigger repair work after the scan.', icon: 'cpu' },
+  { id: 'suspension', name: 'Steering &amp; suspension', desc: 'Lower volume, but the people searching usually need real work done.', icon: 'springs' },
+  { id: 'trust',      name: 'Trust &amp; commercial', desc: 'People comparing options. Less urgent but valuable when they pick you.', icon: 'shield' },
+];
+
+/* ────────────────────────────────────────────────────────────────────
+   NEGATIVE KEYWORDS
+   Grouped by reason. Pre-recommended = pre-ticked.
+   ─────────────────────────────────────────────────────────────────── */
+const NEGATIVES = [
+  // Forbidden services we don't offer ────────────────────────────────
+  { id: 'nf-1',  group: 'forbidden', label: 'air conditioning',    tags: ['rec','service'] },
+  { id: 'nf-2',  group: 'forbidden', label: 'aircon',              tags: ['rec','service'] },
+  { id: 'nf-3',  group: 'forbidden', label: 'ac repair',           tags: ['rec','service'] },
+  { id: 'nf-4',  group: 'forbidden', label: 'regas',               tags: ['rec','service'] },
+  { id: 'nf-5',  group: 'forbidden', label: 'a/c',                 tags: ['rec','service'] },
+  { id: 'nf-6',  group: 'forbidden', label: 'auto electrical',     tags: ['rec','service'] },
+  { id: 'nf-7',  group: 'forbidden', label: 'ecu repair',          tags: ['rec','service'] },
+  { id: 'nf-8',  group: 'forbidden', label: 'rewiring',            tags: ['rec','service'] },
+  { id: 'nf-9',  group: 'forbidden', label: 'car stereo install',  tags: ['rec','service'] },
+  { id: 'nf-10', group: 'forbidden', label: 'dash cam install',    tags: ['rec','service'] },
+  { id: 'nf-11', group: 'forbidden', label: 'tow bar fitting',     tags: ['rec','service'] },
+  { id: 'nf-12', group: 'forbidden', label: 'gps install',         tags: ['rec','service'] },
+  { id: 'nf-13', group: 'forbidden', label: 'panel beating',       tags: ['rec','service'] },
+  { id: 'nf-14', group: 'forbidden', label: 'smash repair',        tags: ['rec','service'] },
+  { id: 'nf-15', group: 'forbidden', label: 'window tint',         tags: ['rec','service'] },
+
+  // Wrong vehicle types ──────────────────────────────────────────────
+  { id: 'nv-1',  group: 'vehicle',   label: 'truck',            tags: ['rec','vehicle'] },
+  { id: 'nv-2',  group: 'vehicle',   label: 'semi trailer',     tags: ['rec','vehicle'] },
+  { id: 'nv-3',  group: 'vehicle',   label: 'bus',              tags: ['rec','vehicle'] },
+  { id: 'nv-4',  group: 'vehicle',   label: 'motorbike',        tags: ['rec','vehicle'] },
+  { id: 'nv-5',  group: 'vehicle',   label: 'motorcycle',       tags: ['rec','vehicle'] },
+  { id: 'nv-6',  group: 'vehicle',   label: 'scooter',          tags: ['rec','vehicle'] },
+  { id: 'nv-7',  group: 'vehicle',   label: 'moped',            tags: ['rec','vehicle'] },
+  { id: 'nv-8',  group: 'vehicle',   label: 'caravan',          tags: ['rec','vehicle'] },
+  { id: 'nv-9',  group: 'vehicle',   label: 'rv',               tags: ['rec','vehicle'] },
+  { id: 'nv-10', group: 'vehicle',   label: 'motorhome',        tags: ['rec','vehicle'] },
+  { id: 'nv-11', group: 'vehicle',   label: 'trailer repair',   tags: ['rec','vehicle'] },
+  { id: 'nv-12', group: 'vehicle',   label: 'forklift',         tags: ['rec','vehicle'] },
+  { id: 'nv-13', group: 'vehicle',   label: 'tractor',          tags: ['rec','vehicle'] },
+  { id: 'nv-14', group: 'vehicle',   label: 'boat',             tags: ['rec','vehicle'] },
+  { id: 'nv-15', group: 'vehicle',   label: 'marine',           tags: ['rec','vehicle'] },
+  { id: 'nv-16', group: 'vehicle',   label: 'jet ski',          tags: ['rec','vehicle'] },
+  { id: 'nv-17', group: 'vehicle',   label: 'mower',            tags: ['rec','vehicle'] },
+  { id: 'nv-18', group: 'vehicle',   label: 'atv',              tags: ['rec','vehicle'] },
+  { id: 'nv-19', group: 'vehicle',   label: 'quad bike',        tags: ['rec','vehicle'] },
+  { id: 'nv-20', group: 'vehicle',   label: 'rc car',           tags: ['vehicle'] },
+
+  // Tyres (we don't fit) ─────────────────────────────────────────────
+  { id: 'nt-1',  group: 'tyres',     label: 'tyre fitting',        tags: ['rec','service'] },
+  { id: 'nt-2',  group: 'tyres',     label: 'tyre repair',         tags: ['rec','service'] },
+  { id: 'nt-3',  group: 'tyres',     label: 'tire change',         tags: ['rec','service'] },
+  { id: 'nt-4',  group: 'tyres',     label: 'puncture repair',     tags: ['rec','service'] },
+  { id: 'nt-5',  group: 'tyres',     label: 'wheel alignment',     tags: ['service'] },
+  { id: 'nt-6',  group: 'tyres',     label: 'tyre rotation',       tags: ['service'] },
+
+  // DIY / information seekers ────────────────────────────────────────
+  { id: 'nd-1',  group: 'diy',       label: 'how to',           tags: ['rec','diy'] },
+  { id: 'nd-2',  group: 'diy',       label: 'tutorial',         tags: ['rec','diy'] },
+  { id: 'nd-3',  group: 'diy',       label: 'youtube',          tags: ['rec','diy'] },
+  { id: 'nd-4',  group: 'diy',       label: 'diy',              tags: ['rec','diy'] },
+  { id: 'nd-5',  group: 'diy',       label: 'forum',            tags: ['rec','info'] },
+  { id: 'nd-6',  group: 'diy',       label: 'reddit',           tags: ['rec','info'] },
+  { id: 'nd-7',  group: 'diy',       label: 'wikipedia',        tags: ['rec','info'] },
+  { id: 'nd-8',  group: 'diy',       label: 'definition',       tags: ['rec','info'] },
+  { id: 'nd-9',  group: 'diy',       label: 'meaning',          tags: ['rec','info'] },
+
+  // Job seekers / education ──────────────────────────────────────────
+  { id: 'nj-1',  group: 'jobs',      label: 'jobs',                tags: ['rec','low'] },
+  { id: 'nj-2',  group: 'jobs',      label: 'hiring',              tags: ['rec','low'] },
+  { id: 'nj-3',  group: 'jobs',      label: 'vacancy',             tags: ['rec','low'] },
+  { id: 'nj-4',  group: 'jobs',      label: 'apprentice',          tags: ['rec','low'] },
+  { id: 'nj-5',  group: 'jobs',      label: 'apprenticeship',      tags: ['rec','low'] },
+  { id: 'nj-6',  group: 'jobs',      label: 'tafe',                tags: ['rec','low'] },
+  { id: 'nj-7',  group: 'jobs',      label: 'mechanic course',     tags: ['rec','low'] },
+  { id: 'nj-8',  group: 'jobs',      label: 'mechanic training',   tags: ['rec','low'] },
+  { id: 'nj-9',  group: 'jobs',      label: 'salary',              tags: ['rec','low'] },
+  { id: 'nj-10', group: 'jobs',      label: 'wage',                tags: ['rec','low'] },
+  { id: 'nj-11', group: 'jobs',      label: 'career',              tags: ['rec','low'] },
+  { id: 'nj-12', group: 'jobs',      label: 'internship',          tags: ['rec','low'] },
+
+  // Bargain hunters / parts only ─────────────────────────────────────
+  { id: 'nb-1',  group: 'bargain',   label: 'free',                tags: ['rec','low'] },
+  { id: 'nb-2',  group: 'bargain',   label: 'cheapest',            tags: ['rec','low'] },
+  { id: 'nb-3',  group: 'bargain',   label: 'used parts',          tags: ['rec','low'] },
+  { id: 'nb-4',  group: 'bargain',   label: 'second hand',         tags: ['rec','low'] },
+  { id: 'nb-5',  group: 'bargain',   label: 'wreckers',            tags: ['rec','low'] },
+  { id: 'nb-6',  group: 'bargain',   label: 'dismantlers',         tags: ['rec','low'] },
+  { id: 'nb-7',  group: 'bargain',   label: 'scrap',               tags: ['rec','low'] },
+  { id: 'nb-8',  group: 'bargain',   label: 'pick a part',         tags: ['rec','low'] },
+  { id: 'nb-9',  group: 'bargain',   label: 'salvage',             tags: ['rec','low'] },
+
+  // Outside service area ─────────────────────────────────────────────
+  { id: 'ng-1',  group: 'geo',       label: 'sydney',           tags: ['rec','geo'] },
+  { id: 'ng-2',  group: 'geo',       label: 'melbourne',        tags: ['rec','geo'] },
+  { id: 'ng-3',  group: 'geo',       label: 'perth',            tags: ['rec','geo'] },
+  { id: 'ng-4',  group: 'geo',       label: 'adelaide',         tags: ['rec','geo'] },
+  { id: 'ng-5',  group: 'geo',       label: 'darwin',           tags: ['rec','geo'] },
+  { id: 'ng-6',  group: 'geo',       label: 'hobart',           tags: ['rec','geo'] },
+  { id: 'ng-7',  group: 'geo',       label: 'canberra',         tags: ['rec','geo'] },
+  { id: 'ng-8',  group: 'geo',       label: 'newcastle',        tags: ['rec','geo'] },
+  { id: 'ng-9',  group: 'geo',       label: 'cairns',           tags: ['rec','geo'] },
+  { id: 'ng-10', group: 'geo',       label: 'townsville',       tags: ['rec','geo'] },
+  { id: 'ng-11', group: 'geo',       label: 'sunshine coast',   tags: ['rec','geo'] },
+  { id: 'ng-12', group: 'geo',       label: 'toowoomba',        tags: ['rec','geo'] },
+  { id: 'ng-13', group: 'geo',       label: 'nsw',              tags: ['geo'] },
+  { id: 'ng-14', group: 'geo',       label: 'new zealand',      tags: ['rec','geo'] },
+  { id: 'ng-15', group: 'geo',       label: 'auckland',         tags: ['rec','geo'] },
+
+  // Competitor brand names (don't bid on these) ──────────────────────
+  { id: 'nc-1',  group: 'competitor', label: 'autoking',         tags: ['rec','brand'] },
+  { id: 'nc-2',  group: 'competitor', label: 'ultra tune',       tags: ['rec','brand'] },
+  { id: 'nc-3',  group: 'competitor', label: 'midas',            tags: ['rec','brand'] },
+  { id: 'nc-4',  group: 'competitor', label: 'kmart tyre',       tags: ['brand'] },
+  { id: 'nc-5',  group: 'competitor', label: 'bob jane',         tags: ['brand'] },
+  { id: 'nc-6',  group: 'competitor', label: 'beaurepaires',     tags: ['brand'] },
+  { id: 'nc-7',  group: 'competitor', label: 'repco',            tags: ['rec','brand'] },
+  { id: 'nc-8',  group: 'competitor', label: 'supercheap auto',  tags: ['rec','brand'] },
+  { id: 'nc-9',  group: 'competitor', label: 'pedders',          tags: ['brand'] },
+];
+
+const NEGATIVE_GROUPS = [
+  { id: 'forbidden',  name: 'Forbidden services',  desc: 'Things we explicitly do not offer (air-con, auto-electrical work, panel beating). Block these to avoid wasted clicks.', icon: 'block' },
+  { id: 'vehicle',    name: 'Wrong vehicle type',  desc: 'Trucks, bikes, caravans, boats. People searching for these are not customers.', icon: 'truck' },
+  { id: 'tyres',      name: 'Tyres',               desc: 'We do not fit tyres or fix punctures. Tyre searches are a common waste.', icon: 'circle' },
+  { id: 'diy',        name: 'DIY / information',   desc: '"How to", "tutorial", forum and wikipedia searchers are looking up info, not booking a mechanic.', icon: 'book' },
+  { id: 'jobs',       name: 'Jobs &amp; training', desc: 'Apprentices, TAFE students, jobseekers. Costly clicks with zero conversion.', icon: 'graduate' },
+  { id: 'bargain',    name: 'Bargain &amp; salvage', desc: '"Free", "cheapest", wreckers, scrap. These rarely become paying customers.', icon: 'sale' },
+  { id: 'geo',        name: 'Outside service area', desc: 'Cities and states we do not service. Stops the ad from showing for wrong-geo searches.', icon: 'globe' },
+  { id: 'competitor', name: 'Competitor brand names', desc: "Bidding on competitor names is expensive and policy-risky. Block them.", icon: 'flag' },
+];
+
+/* ────────────────────────────────────────────────────────────────────
+   LOCATIONS — 42 suburbs across East & Southeast Brisbane + Logan core
+   ─────────────────────────────────────────────────────────────────── */
+const LOCATIONS = [
+  // East Brisbane / Bayside ──────────────────────────────────────────
+  { id: 'e-1',  group: 'east',  label: 'Bulimba',            tags: ['rec'] },
+  { id: 'e-2',  group: 'east',  label: 'Hawthorne',          tags: ['rec'] },
+  { id: 'e-3',  group: 'east',  label: 'Balmoral',           tags: ['rec'] },
+  { id: 'e-4',  group: 'east',  label: 'Morningside',        tags: ['rec'] },
+  { id: 'e-5',  group: 'east',  label: 'Cannon Hill',        tags: ['rec'] },
+  { id: 'e-6',  group: 'east',  label: 'Norman Park',        tags: ['rec'] },
+  { id: 'e-7',  group: 'east',  label: 'East Brisbane',      tags: ['rec'] },
+  { id: 'e-8',  group: 'east',  label: 'Camp Hill',          tags: ['rec'] },
+  { id: 'e-9',  group: 'east',  label: 'Carina',             tags: ['rec'] },
+  { id: 'e-10', group: 'east',  label: 'Carindale',          tags: ['rec'] },
+  { id: 'e-11', group: 'east',  label: 'Tingalpa',           tags: ['rec'] },
+  { id: 'e-12', group: 'east',  label: 'Wynnum',             tags: ['rec'] },
+  { id: 'e-13', group: 'east',  label: 'Manly',              tags: ['rec'] },
+  { id: 'e-14', group: 'east',  label: 'Wynnum West',        tags: ['rec'] },
+  { id: 'e-15', group: 'east',  label: 'Lota',               tags: ['rec'] },
+  { id: 'e-16', group: 'east',  label: 'Hemmant',            tags: ['rec'] },
+  { id: 'e-17', group: 'east',  label: 'Capalaba',           tags: ['rec'] },
+  { id: 'e-18', group: 'east',  label: 'Cleveland',          tags: ['rec'] },
+
+  // Southeast Brisbane ────────────────────────────────────────────────
+  { id: 's-1',  group: 'south', label: 'Coorparoo',          tags: ['rec'] },
+  { id: 's-2',  group: 'south', label: 'Greenslopes',        tags: ['rec'] },
+  { id: 's-3',  group: 'south', label: 'Holland Park',       tags: ['rec'] },
+  { id: 's-4',  group: 'south', label: 'Holland Park West',  tags: ['rec'] },
+  { id: 's-5',  group: 'south', label: 'Tarragindi',         tags: ['rec'] },
+  { id: 's-6',  group: 'south', label: 'Annerley',           tags: ['rec'] },
+  { id: 's-7',  group: 'south', label: 'Mount Gravatt',      tags: ['rec'] },
+  { id: 's-8',  group: 'south', label: 'Upper Mount Gravatt',tags: ['rec'] },
+  { id: 's-9',  group: 'south', label: 'Mansfield',          tags: ['rec'] },
+  { id: 's-10', group: 'south', label: 'Wishart',            tags: ['rec'] },
+  { id: 's-11', group: 'south', label: 'MacGregor',          tags: ['rec'] },
+  { id: 's-12', group: 'south', label: 'Sunnybank',          tags: ['rec'] },
+  { id: 's-13', group: 'south', label: 'Sunnybank Hills',    tags: ['rec'] },
+  { id: 's-14', group: 'south', label: 'Eight Mile Plains',  tags: ['rec'] },
+  { id: 's-15', group: 'south', label: 'Rochedale',          tags: ['rec'] },
+  { id: 's-16', group: 'south', label: 'Salisbury',          tags: ['rec'] },
+  { id: 's-17', group: 'south', label: 'Calamvale',          tags: ['rec'] },
+
+  // Logan core ────────────────────────────────────────────────────────
+  { id: 'l-1',  group: 'logan', label: 'Springwood',         tags: ['rec'] },
+  { id: 'l-2',  group: 'logan', label: 'Underwood',          tags: ['rec'] },
+  { id: 'l-3',  group: 'logan', label: 'Daisy Hill',         tags: ['rec'] },
+  { id: 'l-4',  group: 'logan', label: 'Slacks Creek',       tags: ['rec'] },
+  { id: 'l-5',  group: 'logan', label: 'Rochedale South',    tags: ['rec'] },
+  { id: 'l-6',  group: 'logan', label: 'Shailer Park',       tags: ['rec'] },
+  { id: 'l-7',  group: 'logan', label: 'Loganholme',         tags: ['rec'] },
+];
+
+const LOCATION_GROUPS = [
+  { id: 'east',  name: 'East Brisbane &amp; Bayside', desc: 'Bulimba through to Cleveland. Easy access from the M1 / Wynnum Rd corridor.', icon: 'pin' },
+  { id: 'south', name: 'Southeast Brisbane',          desc: 'Coorparoo down through Sunnybank and Calamvale. The richest mix of mortgage-belt residents who hire mobile mechanics.', icon: 'home' },
+  { id: 'logan', name: 'Springwood &amp; Logan core', desc: 'Home base. Fastest response times, often same-day. Lock these in regardless of budget.', icon: 'flag' },
+];
+
+const ICON_SVGS = {
+  pin:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>',
+  alert:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  disc:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>',
+  tool:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+  list:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>',
+  battery: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="16" height="10" rx="2"/><line x1="22" y1="11" x2="22" y2="13"/><line x1="6" y1="11" x2="6" y2="13"/><line x1="10" y1="11" x2="10" y2="13"/></svg>',
+  bolt:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+  drop:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>',
+  cpu:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>',
+  springs: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 19.07a10 10 0 0 1 0-14.14"/></svg>',
+  shield:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+  block:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>',
+  truck:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>',
+  circle:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>',
+  book:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',
+  graduate:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 2 3 3 6 3s6-1 6-3v-5"/></svg>',
+  sale:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>',
+  globe:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>',
+  flag:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>',
+  home:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+};
+
+const TAG_LABELS = {
+  rec:     'Recommended',
+  hot:     'High-intent',
+  brand:   'Brand',
+  exact:   'Exact match',
+  phrase:  'Phrase',
+  broad:   'Broad',
+  service: 'Service',
+  vehicle: 'Vehicle',
+  geo:     'Geo',
+  diy:     'DIY',
+  info:    'Info',
+  low:     'Low-intent',
+};
+
+const CHECK_SVG = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
+/* ────────────────────────────────────────────────────────────────────
+   STATE
+   ─────────────────────────────────────────────────────────────────── */
+const state = {
+  // Sets of selected ids
+  kwSelected:  new Set(),
+  negSelected: new Set(),
+  locSelected: new Set(),
+
+  // User-added custom items (label strings)
+  kwCustom:  [],
+  negCustom: [],
+  locCustom: [],
+
+  // Active filter groups (null = all)
+  kwFilter: null, negFilter: null, locFilter: null,
+
+  // Search strings
+  kwQuery: '', negQuery: '', locQuery: '',
+
+  // Active tab
+  tab: 'keywords',
+
+  // Persistence
+  loaded: false,
+  dirty: false,
+  saved: null,
+  savedAt: null,
+};
+
+/* Pre-tick recommended on first load */
+KEYWORDS.forEach(k => { if (k.tags?.includes('rec')) state.kwSelected.add(k.id); });
+NEGATIVES.forEach(n => { if (n.tags?.includes('rec')) state.negSelected.add(n.id); });
+LOCATIONS.forEach(l => { if (l.tags?.includes('rec')) state.locSelected.add(l.id); });
+
+/* ────────────────────────────────────────────────────────────────────
+   HELPERS
+   ─────────────────────────────────────────────────────────────────── */
+const $ = sel => document.querySelector(sel);
+const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+function renderTagPill(t) {
+  const label = TAG_LABELS[t] || t;
+  return `<span class="tag tag--${t}">${escapeHtml(label)}</span>`;
+}
+
+function renderItem(item, selectedSet) {
+  const on = selectedSet.has(item.id);
+  const tags = (item.tags || []).map(renderTagPill).join('');
+  return `
+    <div class="item ${on ? 'is-on' : ''}" data-id="${item.id}">
+      <div class="item__check">${CHECK_SVG}</div>
+      <div class="item__body">
+        <div class="item__label">${escapeHtml(item.label)}</div>
+        ${tags ? `<div class="item__tags">${tags}</div>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function renderCustomItem(label, kind) {
+  return `
+    <div class="item is-on" data-custom data-kind="${kind}" data-label="${escapeHtml(label)}">
+      <div class="item__check">${CHECK_SVG}</div>
+      <div class="item__body">
+        <div class="item__label">${escapeHtml(label)} <span class="tag" style="margin-left:6px;">Custom</span></div>
+      </div>
+    </div>
+  `;
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   RENDER — Keywords
+   ─────────────────────────────────────────────────────────────────── */
+function renderKeywords() {
+  const list = $('#kwList');
+  const q = state.kwQuery.toLowerCase().trim();
+  const filterGroup = state.kwFilter;
+  const visible = KEYWORDS.filter(k =>
+    (!filterGroup || k.group === filterGroup) &&
+    (!q || k.label.toLowerCase().includes(q))
+  );
+
+  if (visible.length === 0 && state.kwCustom.length === 0) {
+    list.innerHTML = `<div class="empty">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <div>No keywords match.</div>
+    </div>`;
+    return;
+  }
+
+  // Group visible by group id, preserving definition order
+  const byGroup = new Map(KEYWORD_GROUPS.map(g => [g.id, []]));
+  visible.forEach(k => { byGroup.get(k.group)?.push(k); });
+
+  let html = '';
+  KEYWORD_GROUPS.forEach(g => {
+    const items = byGroup.get(g.id) || [];
+    if (items.length === 0) return;
+    const selectedInGroup = items.filter(i => state.kwSelected.has(i.id)).length;
+    html += `
+      <div class="group">
+        <div class="group__head">
+          <div class="group__title-row">
+            <div class="group__title-left">
+              <div class="group__icon">${ICON_SVGS[g.icon] || ''}</div>
+              <div>
+                <h3 class="group__title">${g.name}</h3>
+                <p class="group__desc">${g.desc}</p>
+              </div>
+            </div>
+            <span class="group__count"><b>${selectedInGroup}</b> / ${items.length}</span>
+          </div>
+          <div class="group__bulk">
+            <button data-bulk="kw-all"  data-group="${g.id}">Select all</button>
+            <button data-bulk="kw-none" data-group="${g.id}">Clear</button>
+          </div>
+        </div>
+        <div class="items">
+          ${items.map(i => renderItem(i, state.kwSelected)).join('')}
+        </div>
+        <div class="add-row">
+          <input type="text" placeholder="Add a custom keyword for ${g.name.replace(/&amp;/g,'&')}…" data-custom-input="kw-${g.id}" maxlength="80" />
+          <button data-custom-add="kw-${g.id}">+ Add</button>
+        </div>
+      </div>
+    `;
+  });
+
+  // Custom (user-added) keywords block
+  if (state.kwCustom.length > 0) {
+    html += `
+      <div class="group">
+        <div class="group__head">
+          <div class="group__title-row">
+            <div class="group__title-left">
+              <div class="group__icon">${ICON_SVGS.tool}</div>
+              <div>
+                <h3 class="group__title">Custom keywords</h3>
+                <p class="group__desc">Added by you. Toggle off to remove from selection.</p>
+              </div>
+            </div>
+            <span class="group__count"><b>${state.kwCustom.length}</b></span>
+          </div>
+        </div>
+        <div class="items">
+          ${state.kwCustom.map(s => renderCustomItem(s, 'kw')).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  list.innerHTML = html;
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   RENDER — Negatives
+   ─────────────────────────────────────────────────────────────────── */
+function renderNegatives() {
+  const list = $('#negList');
+  const q = state.negQuery.toLowerCase().trim();
+  const fg = state.negFilter;
+  const visible = NEGATIVES.filter(n =>
+    (!fg || n.group === fg) &&
+    (!q || n.label.toLowerCase().includes(q))
+  );
+
+  if (visible.length === 0 && state.negCustom.length === 0) {
+    list.innerHTML = `<div class="empty">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <div>No negatives match.</div>
+    </div>`;
+    return;
+  }
+
+  const byGroup = new Map(NEGATIVE_GROUPS.map(g => [g.id, []]));
+  visible.forEach(n => { byGroup.get(n.group)?.push(n); });
+
+  let html = '';
+  NEGATIVE_GROUPS.forEach(g => {
+    const items = byGroup.get(g.id) || [];
+    if (items.length === 0) return;
+    const selectedInGroup = items.filter(i => state.negSelected.has(i.id)).length;
+    html += `
+      <div class="group">
+        <div class="group__head">
+          <div class="group__title-row">
+            <div class="group__title-left">
+              <div class="group__icon">${ICON_SVGS[g.icon] || ''}</div>
+              <div>
+                <h3 class="group__title">${g.name}</h3>
+                <p class="group__desc">${g.desc}</p>
+              </div>
+            </div>
+            <span class="group__count"><b>${selectedInGroup}</b> / ${items.length}</span>
+          </div>
+          <div class="group__bulk">
+            <button data-bulk="neg-all"  data-group="${g.id}">Select all</button>
+            <button data-bulk="neg-none" data-group="${g.id}">Clear</button>
+          </div>
+        </div>
+        <div class="items">
+          ${items.map(i => renderItem(i, state.negSelected)).join('')}
+        </div>
+        <div class="add-row">
+          <input type="text" placeholder="Add a custom negative for ${g.name.replace(/&amp;/g,'&')}…" data-custom-input="neg-${g.id}" maxlength="80" />
+          <button data-custom-add="neg-${g.id}">+ Add</button>
+        </div>
+      </div>
+    `;
+  });
+
+  if (state.negCustom.length > 0) {
+    html += `
+      <div class="group">
+        <div class="group__head">
+          <div class="group__title-row">
+            <div class="group__title-left">
+              <div class="group__icon">${ICON_SVGS.block}</div>
+              <div>
+                <h3 class="group__title">Custom negatives</h3>
+                <p class="group__desc">Added by you.</p>
+              </div>
+            </div>
+            <span class="group__count"><b>${state.negCustom.length}</b></span>
+          </div>
+        </div>
+        <div class="items">
+          ${state.negCustom.map(s => renderCustomItem(s, 'neg')).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  list.innerHTML = html;
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   RENDER — Locations
+   ─────────────────────────────────────────────────────────────────── */
+function renderLocations() {
+  const list = $('#locList');
+  const q = state.locQuery.toLowerCase().trim();
+  const fg = state.locFilter;
+  const visible = LOCATIONS.filter(l =>
+    (!fg || l.group === fg) &&
+    (!q || l.label.toLowerCase().includes(q))
+  );
+
+  if (visible.length === 0 && state.locCustom.length === 0) {
+    list.innerHTML = `<div class="empty">No suburbs match.</div>`;
+    return;
+  }
+
+  const byGroup = new Map(LOCATION_GROUPS.map(g => [g.id, []]));
+  visible.forEach(l => { byGroup.get(l.group)?.push(l); });
+
+  let html = '';
+  LOCATION_GROUPS.forEach(g => {
+    const items = byGroup.get(g.id) || [];
+    if (items.length === 0) return;
+    const selectedInGroup = items.filter(i => state.locSelected.has(i.id)).length;
+    html += `
+      <div class="group">
+        <div class="group__head">
+          <div class="group__title-row">
+            <div class="group__title-left">
+              <div class="group__icon">${ICON_SVGS[g.icon] || ''}</div>
+              <div>
+                <h3 class="group__title">${g.name}</h3>
+                <p class="group__desc">${g.desc}</p>
+              </div>
+            </div>
+            <span class="group__count"><b>${selectedInGroup}</b> / ${items.length}</span>
+          </div>
+          <div class="group__bulk">
+            <button data-bulk="loc-all"  data-group="${g.id}">Select all</button>
+            <button data-bulk="loc-none" data-group="${g.id}">Clear</button>
+          </div>
+        </div>
+        <div class="items">
+          ${items.map(i => renderItem(i, state.locSelected)).join('')}
+        </div>
+        <div class="add-row">
+          <input type="text" placeholder="Add a suburb to ${g.name.replace(/&amp;/g,'&')}…" data-custom-input="loc-${g.id}" maxlength="40" />
+          <button data-custom-add="loc-${g.id}">+ Add</button>
+        </div>
+      </div>
+    `;
+  });
+
+  if (state.locCustom.length > 0) {
+    html += `
+      <div class="group">
+        <div class="group__head">
+          <div class="group__title-row">
+            <div class="group__title-left">
+              <div class="group__icon">${ICON_SVGS.pin}</div>
+              <div>
+                <h3 class="group__title">Custom suburbs</h3>
+                <p class="group__desc">Added by you.</p>
+              </div>
+            </div>
+            <span class="group__count"><b>${state.locCustom.length}</b></span>
+          </div>
+        </div>
+        <div class="items">
+          ${state.locCustom.map(s => renderCustomItem(s, 'loc')).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  list.innerHTML = html;
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   RENDER — Filter chips at the top of each panel
+   ─────────────────────────────────────────────────────────────────── */
+function renderFilterChips() {
+  const buildChips = (groups, items, getGroup, activeFilter, panel) => {
+    const parts = [`<button class="chip ${activeFilter === null ? 'is-active' : ''}" data-filter="${panel}" data-group="">All <span class="chip__count">${items.length}</span></button>`];
+    groups.forEach(g => {
+      const count = items.filter(getGroup(g)).length;
+      parts.push(`<button class="chip ${activeFilter === g.id ? 'is-active' : ''}" data-filter="${panel}" data-group="${g.id}">${g.name.replace(/&amp;/g,'&')} <span class="chip__count">${count}</span></button>`);
+    });
+    return parts.join('');
+  };
+
+  $('#kwFilters').innerHTML  = buildChips(KEYWORD_GROUPS,  KEYWORDS,  g => k => k.group === g.id, state.kwFilter,  'kw');
+  $('#negFilters').innerHTML = buildChips(NEGATIVE_GROUPS, NEGATIVES, g => n => n.group === g.id, state.negFilter, 'neg');
+  $('#locFilters').innerHTML = buildChips(LOCATION_GROUPS, LOCATIONS, g => l => l.group === g.id, state.locFilter, 'loc');
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   RENDER — Counters + save bar
+   ─────────────────────────────────────────────────────────────────── */
+function renderCounters() {
+  const kwTotal  = state.kwSelected.size  + state.kwCustom.length;
+  const negTotal = state.negSelected.size + state.negCustom.length;
+  const locTotal = state.locSelected.size + state.locCustom.length;
+
+  $('#kwCount').textContent  = kwTotal;
+  $('#negCount').textContent = negTotal;
+  $('#locCount').textContent = locTotal;
+
+  $('#saveSummary').innerHTML = `
+    <b>${kwTotal}</b> keywords <span class="dim">·</span>
+    <b>${negTotal}</b> negatives <span class="dim">·</span>
+    <b>${locTotal}</b> locations
+    <div id="saveMeta" class="dim" style="font-size:12.5px;margin-top:2px;">${state.savedAt ? 'Last saved ' + formatTime(state.savedAt) : 'No saved campaign yet'}</div>
+  `;
+
+  const btn = $('#saveBtn');
+  btn.disabled = !state.dirty || !state.loaded;
+}
+
+function renderStatus() {
+  const el = $('#status');
+  const txt = $('#statusText');
+  el.classList.remove('is-loading','is-error','is-saved','is-dirty');
+  if (!state.loaded) {
+    el.classList.add('is-loading');
+    txt.textContent = 'Loading saved campaign…';
+  } else if (state.dirty) {
+    el.classList.add('is-dirty');
+    txt.textContent = 'Unsaved changes — hit Save when ready.';
+  } else if (state.savedAt) {
+    el.classList.add('is-saved');
+    txt.textContent = 'Campaign synced to Firebase. Last saved ' + formatTime(state.savedAt) + '.';
+  } else {
+    txt.textContent = 'New campaign — recommended picks are pre-selected.';
+  }
+}
+
+function renderAll() {
+  renderFilterChips();
+  if (state.tab === 'keywords')  renderKeywords();
+  if (state.tab === 'negatives') renderNegatives();
+  if (state.tab === 'locations') renderLocations();
+  renderCounters();
+  renderStatus();
+}
+
+function formatTime(ts) {
+  try {
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toLocaleString('en-AU', { dateStyle: 'medium', timeStyle: 'short' });
+  } catch { return ''; }
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   EVENT WIRING
+   ─────────────────────────────────────────────────────────────────── */
+
+// Tabs
+$$('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    state.tab = btn.dataset.tab;
+    $$('.tab').forEach(b => b.classList.toggle('is-active', b === btn));
+    $$('.panel').forEach(p => p.classList.toggle('is-active', p.id === `panel-${state.tab}`));
+    renderAll();
+  });
+});
+
+// Search inputs
+$('#kwSearch').addEventListener('input',  e => { state.kwQuery  = e.target.value; renderKeywords(); });
+$('#negSearch').addEventListener('input', e => { state.negQuery = e.target.value; renderNegatives(); });
+$('#locSearch').addEventListener('input', e => { state.locQuery = e.target.value; renderLocations(); });
+
+// Filter chips
+document.addEventListener('click', (e) => {
+  const chip = e.target.closest('.chip[data-filter]');
+  if (chip) {
+    const panel = chip.dataset.filter;   // 'kw' | 'neg' | 'loc'
+    const g = chip.dataset.group || null;
+    if (panel === 'kw')  state.kwFilter  = g;
+    if (panel === 'neg') state.negFilter = g;
+    if (panel === 'loc') state.locFilter = g;
+    renderAll();
+  }
+});
+
+// Item toggles + bulk + custom
+document.addEventListener('click', (e) => {
+  // Toggle item
+  const item = e.target.closest('.item[data-id]');
+  if (item) {
+    const id = item.dataset.id;
+    const setName =
+      state.tab === 'keywords'  ? 'kwSelected' :
+      state.tab === 'negatives' ? 'negSelected' :
+      'locSelected';
+    const set = state[setName];
+    if (set.has(id)) set.delete(id); else set.add(id);
+    markDirty();
+    renderAll();
+    return;
+  }
+
+  // Toggle custom item — clicking removes it from the list (since it's user-owned)
+  const custom = e.target.closest('.item[data-custom]');
+  if (custom) {
+    const label = custom.dataset.label;
+    const kind = custom.dataset.kind;
+    const listName =
+      kind === 'kw'  ? 'kwCustom' :
+      kind === 'neg' ? 'negCustom' :
+      'locCustom';
+    state[listName] = state[listName].filter(x => x !== label);
+    markDirty();
+    renderAll();
+    return;
+  }
+
+  // Bulk per-group
+  const bulk = e.target.closest('[data-bulk]');
+  if (bulk) {
+    const [tab, mode] = bulk.dataset.bulk.split('-');  // kw / neg / loc + all / none
+    const group = bulk.dataset.group;
+    const items =
+      tab === 'kw'  ? KEYWORDS  :
+      tab === 'neg' ? NEGATIVES :
+      LOCATIONS;
+    const set =
+      tab === 'kw'  ? state.kwSelected :
+      tab === 'neg' ? state.negSelected :
+      state.locSelected;
+    items.forEach(i => {
+      if (i.group !== group) return;
+      if (mode === 'all') set.add(i.id);
+      else set.delete(i.id);
+    });
+    markDirty();
+    renderAll();
+    return;
+  }
+
+  // Custom add buttons
+  const addBtn = e.target.closest('[data-custom-add]');
+  if (addBtn) {
+    const key = addBtn.dataset.customAdd; // e.g. "kw-core"
+    const input = document.querySelector(`[data-custom-input="${key}"]`);
+    if (!input) return;
+    const val = (input.value || '').trim().toLowerCase();
+    if (!val) return;
+    const [kind] = key.split('-');
+    const listName =
+      kind === 'kw'  ? 'kwCustom' :
+      kind === 'neg' ? 'negCustom' :
+      'locCustom';
+    if (!state[listName].includes(val)) state[listName].push(val);
+    input.value = '';
+    markDirty();
+    renderAll();
+    return;
+  }
+
+  // Toolbar actions
+  const act = e.target.closest('[data-action]');
+  if (act) {
+    const a = act.dataset.action;
+    if (a === 'kw-clear')               { state.kwSelected.clear();  markDirty(); renderAll(); }
+    if (a === 'kw-select-recommended')  { state.kwSelected = new Set(KEYWORDS.filter(k => k.tags?.includes('rec')).map(k => k.id));  markDirty(); renderAll(); }
+    if (a === 'neg-clear')              { state.negSelected.clear(); markDirty(); renderAll(); }
+    if (a === 'neg-select-all')         { state.negSelected = new Set(NEGATIVES.map(n => n.id)); markDirty(); renderAll(); }
+    if (a === 'loc-clear')              { state.locSelected.clear(); markDirty(); renderAll(); }
+    if (a === 'loc-select-all')         { state.locSelected = new Set(LOCATIONS.map(l => l.id)); markDirty(); renderAll(); }
+    return;
+  }
+});
+
+// Save
+$('#saveBtn').addEventListener('click', () => saveCampaign());
+
+function markDirty() { state.dirty = true; }
+
+/* ────────────────────────────────────────────────────────────────────
+   FIREBASE LOAD / SAVE
+   We store labels (not ids) so the Firestore doc is human-readable and
+   robust against catalogue id renames.
+   ─────────────────────────────────────────────────────────────────── */
+
+function selectedLabels(items, set) {
+  return items.filter(i => set.has(i.id)).map(i => i.label);
+}
+
+async function loadCampaign() {
+  try {
+    const snap = await getDoc(SETTINGS_DOC);
+    if (snap.exists()) {
+      const d = snap.data();
+      // Map labels back to ids where they match the catalogue, else into customs
+      const applyLabels = (labels, items, set, customList) => {
+        if (!Array.isArray(labels)) return;
+        set.clear();
+        customList.length = 0;
+        const known = new Map(items.map(i => [i.label.toLowerCase(), i.id]));
+        labels.forEach(l => {
+          const id = known.get(String(l).toLowerCase());
+          if (id) set.add(id);
+          else customList.push(String(l));
+        });
+      };
+
+      applyLabels(d.keywords,         KEYWORDS,  state.kwSelected,  state.kwCustom);
+      applyLabels(d.negativeKeywords, NEGATIVES, state.negSelected, state.negCustom);
+      applyLabels(d.locations,        LOCATIONS, state.locSelected, state.locCustom);
+
+      state.savedAt = d.updatedAt || null;
+      state.saved = d;
+    }
+  } catch (err) {
+    console.error('Firebase load failed', err);
+    showToast('Could not load saved campaign — using defaults.', 'error');
+  }
+  state.loaded = true;
+  state.dirty = false;
+  renderAll();
+}
+
+async function saveCampaign() {
+  const btn = $('#saveBtn');
+  btn.classList.add('save-btn--loading');
+  btn.disabled = true;
+  try {
+    const payload = {
+      keywords:         [...selectedLabels(KEYWORDS,  state.kwSelected),  ...state.kwCustom],
+      negativeKeywords: [...selectedLabels(NEGATIVES, state.negSelected), ...state.negCustom],
+      locations:        [...selectedLabels(LOCATIONS, state.locSelected), ...state.locCustom],
+      updatedAt: serverTimestamp(),
+    };
+    await setDoc(SETTINGS_DOC, payload, { merge: true });
+    state.dirty = false;
+    state.savedAt = new Date(); // server will overwrite next load but for UI now
+    showToast('Campaign saved to Firebase.', 'success');
+  } catch (err) {
+    console.error('Save failed', err);
+    showToast('Save failed — check Firebase rules / network.', 'error');
+  } finally {
+    btn.classList.remove('save-btn--loading');
+    renderAll();
+  }
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   TOAST
+   ─────────────────────────────────────────────────────────────────── */
+let toastTimer = null;
+function showToast(msg, kind) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.className = 'toast is-on' + (kind ? ' is-' + kind : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.className = 'toast'; }, 2800);
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   GO
+   ─────────────────────────────────────────────────────────────────── */
+renderAll();
+loadCampaign();
+
+</script>
+
+</body>
+</html>
